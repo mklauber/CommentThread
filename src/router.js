@@ -4,11 +4,11 @@ function route(handle, pathname, response, request) {
     handle[pathname](response, request);
   } else {
     console.log("No request handler found for " + pathname);
-    var content = fs.readFileSync("./views/404.html");
     response.writeHead(404, {"Content-Type": "text/html"});
-    response.write(content);
+    response.write("");
     response.end();
   }
+  console.log("Routed request for " + pathname);
 }
 
 exports.route = route;
