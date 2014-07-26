@@ -8,7 +8,7 @@ var http = require('http'),
     api = require('./api')
 
 
-thread = function(res) {
+thread = function(req, res) {
   var props = {comments: api.messages}
   var html = React.renderComponentToString(Thread(props))
   res.setHeader('Content-Type', 'text/html')
@@ -28,7 +28,7 @@ thread = function(res) {
   )
 } 
 
-bundle = function(res){
+bundle = function(req, res){
   res.setHeader('Content-Type', 'text/javascript')
   browserify()
     .transform(literalify.configure({react: 'window.React'}))
@@ -37,7 +37,7 @@ bundle = function(res){
     .pipe(res)
 }
 
-style = function(res){
+style = function(req, res){
   res.setHeader('Content-Type', 'text/css');
   var content = fs.readFileSync("./style.css");
   res.end(content);

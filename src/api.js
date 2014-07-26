@@ -12,4 +12,11 @@ var messages = [
   {'id': '0', 'parent': null, 'msg': "What do you think of my threaded comments?", 'order': 0},
 ]
 
+children = function(req, res) {
+  var id = '0';
+  var results = messages.filter(function (msg) { return msg['parent'] == id; });
+  res.end(JSON.stringify(results));
+};
+
 exports.messages = messages
+exports.children = children

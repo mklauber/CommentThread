@@ -19,6 +19,7 @@ var messages = [
   {'id': '0', 'parent': null, 'msg': "What do you think of my threaded comments?", 'order': 0},
 ]
 
+
 var msgs = {};
 messages.forEach(function (val) {
   msgs[val['id']] = val;
@@ -59,8 +60,9 @@ var Comment = React.createClass({
       return (div({className: "container"},
             div({className: "children" }),
             div({className: "msg",
-               onClick: this.handleClick},
-               '#' + msgs[this.state.id]['msg']
+                 onClick: this.handleClick},
+                div({className: "index"}, '#' + msgs[this.state.id]['order']),
+                msgs[this.state.id]['msg']
             )
           ))
     }
@@ -69,23 +71,26 @@ var Comment = React.createClass({
     var children = [];
     this.state.children.forEach(function(element) {
       children.push(div({className: "children msg",
-                 onClick:this.handleNavigate.bind(null, element.id)},
-                 '#' + element.msg
+                         onClick:this.handleNavigate.bind(null, element.id)},
+                        div({className: "index"}, '#' + element.order),
+                        element.msg
               ));
     }, this)
     
     var ancestors = [];
     this.state.ancestors.forEach(function(element) {
       ancestors.push(div({className: "ancestor msg",
-                 onClick: this.handleNavigate.bind(null, element)},
-                 '#' +msgs[element]['msg']
+                          onClick: this.handleNavigate.bind(null, element)},
+                         div({className: "index"}, '#' + msgs[element].order),
+                         msgs[element]['msg']
               ));
     }, this)
     return (div({className: "container visible"},
           children,
           div({className:"current msg",
-             onClick:this.handleClick},
-             '#' + msgs[this.state.id]['msg']),
+               onClick:this.handleClick},
+              div({className: "index"}, '#' + msgs[this.state.id]['order']),
+              msgs[this.state.id]['msg']),
            ancestors
         ));
   },
