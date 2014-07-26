@@ -1,29 +1,37 @@
-var React = require('react'),
+var api = require('./api'),
+    React = require('react'),
     DOM = React.DOM,
-    div = DOM.div;
+    div = DOM.div,
+    br  = DOM.br
+    span = DOM.span;
 
+
+var messages = api.messages;
 // This is just a simple example of a component that can be rendered on both
 // the server and browser
-var messages = [
-  {'id': '0.2.0.1', 'parent': '0.2.0', 'msg': "Is that all they do?", 'order': 11},
-  {'id': '0.1.1.0', 'parent': '0.1.1', 'msg': "Is there anything you'd like to change?", 'order': 10},
-  {'id': '0.2.0.0', 'parent': '0.2.0', 'msg': "Oh that's kind of neat.", 'order': 9},
-  {'id': '0.1.1', 'parent': '0.1', 'msg': "I agree with that sentiment.", 'order':8},
-  {'id': '0.1.0', 'parent': '0.1', 'msg': "What kind of issues?", 'order': 7},
-  {'id': '0.0.1', 'parent': '0.0', 'msg': "Is there anything that bothers you about them?", 'order': 6},
-  {'id': '0.2.0', 'parent': '0.2', 'msg': "They transition between list and threading.", 'order': 5},
-  {'id': '0.0.0', 'parent': '0.0', 'msg': "Have you seen the threaded display?", 'order': 4},
-  {'id': '0.2', 'parent': '0', 'msg': "What's different about them?", 'order': 3},
-  {'id': '0.1', 'parent': '0', 'msg': "There's still some issues.", 'order': 2},
-  {'id': '0.0', 'parent': '0', 'msg': "I think they work alright.", 'order': 1},
-  {'id': '0', 'parent': null, 'msg': "What do you think of my threaded comments?", 'order': 0},
-]
+//var messages = [
+//  {'id': '0.2.0.1', 'parent': '0.2.0', 'message': "Is that all they do?", 'order': 11},
+//  {'id': '0.1.1.0', 'parent': '0.1.1', 'message': "Is there anything you'd like to change?", 'order': 10},
+//  {'id': '0.2.0.0', 'parent': '0.2.0', 'message': "Oh that's kind of neat.", 'order': 9},
+//  {'id': '0.1.1', 'parent': '0.1', 'message': "I agree with that sentiment.", 'order':8},
+//  {'id': '0.1.0', 'parent': '0.1', 'message': "What kind of issues?", 'order': 7},
+//  {'id': '0.0.1', 'parent': '0.0', 'message': "Is there anything that bothers you about them?", 'order': 6},
+//  {'id': '0.2.0', 'parent': '0.2', 'message': "They transition between list and threading.", 'order': 5},
+//  {'id': '0.0.0', 'parent': '0.0', 'message': "Have you seen the threaded display?", 'order': 4},
+//  {'id': '0.2', 'parent': '0', 'message': "What's different about them?", 'order': 3},
+//  {'id': '0.1', 'parent': '0', 'message': "There's still some issues.", 'order': 2},
+//  {'id': '0.0', 'parent': '0', 'message': "I think they work alright.", 'order': 1},
+//  {'id': '0', 'parent': null, 'message': "What do you think of my threaded comments?", 'order': 0},
+//]
+
+console.log("Messages: " + messages.length);
 
 
 var msgs = {};
 messages.forEach(function (val) {
   msgs[val['id']] = val;
 });
+
 
 var sort_by_date = function(a, b) { return a-b;};
 
@@ -57,12 +65,15 @@ var Comment = React.createClass({
     
     // Handle the simple case.
     if (!this.state.focus) {
+      console.log("ID: " + this.state.id);
       return (div({className: "container"},
             div({className: "children" }),
             div({className: "msg",
                  onClick: this.handleClick},
-                div({className: "index"}, '#' + msgs[this.state.id]['order']),
-                msgs[this.state.id]['msg']
+                div({className: "index"}, '#'),// + msgs[this.state.id]['order']),
+                span({className: "author"},msgs[this.state.id]['author']['name']),
+                br(),
+                msgs[this.state.id]['raw_message']
             )
           ))
     }
@@ -72,8 +83,10 @@ var Comment = React.createClass({
     this.state.children.forEach(function(element) {
       children.push(div({className: "children msg",
                          onClick:this.handleNavigate.bind(null, element.id)},
-                        div({className: "index"}, '#' + element.order),
-                        element.msg
+                        div({className: "index"}, '#'),// + element.order),
+                        span({className: "author"},element['author']['name']),
+                        br(),
+                        element['raw_message']
               ));
     }, this)
     
@@ -81,32 +94,43 @@ var Comment = React.createClass({
     this.state.ancestors.forEach(function(element) {
       ancestors.push(div({className: "ancestor msg",
                           onClick: this.handleNavigate.bind(null, element)},
-                         div({className: "index"}, '#' + msgs[element].order),
-                         msgs[element]['msg']
+                         div({className: "index"}, '#'),// + msgs[element].order),
+                         span({className: "author"},msgs[element]['author']['name']),
+                         br(),
+                         msgs[element]['raw_message']
               ));
     }, this)
     return (div({className: "container visible"},
           children,
           div({className:"current msg",
                onClick:this.handleClick},
-              div({className: "index"}, '#' + msgs[this.state.id]['order']),
-              msgs[this.state.id]['msg']),
+              div({className: "index"}, '#'),// + msgs[this.state.id]['order']),
+              span({className: "author"},msgs[this.state.id]['author']['name']),
+              br(),
+              msgs[this.state.id]['raw_message']),
            ancestors
         ));
   },
   
   handleNavigate: function(id) {
     console.log(event);
-    this.setState({id: id,
-                   children: getChildren(id),
-                   ancestors: getAncestors(id)});
+    var _this = this;
+    $.getJSON('/api/message/' + id, function(data) {
+      _this.setState({id:id,
+                     children: data['children'],
+                     ancestors: data['ancestors']
+                    });
+    });
   },
   handleClick: function(event) {
-    this.setState({focus: !this.state.focus,
-                   id: this.props.id,
-                   children: getChildren(this.state.id),
-                   ancestors: getAncestors(this.state.id)});
-    event.stopPropagation();
+    var _this = this;
+    $.getJSON('/api/message/' + this.props.id, function(data) {
+      _this.setState({focus: !_this.state.focus,
+                      id:_this.props.id,
+                      children: data['children'],
+                      ancestors: data['ancestors']
+                    });
+    });
   }
 });
 
