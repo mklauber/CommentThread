@@ -21,7 +21,6 @@ thread = function(req, res) {
     ' <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>\n' +
     '<script src=//fb.me/react-0.11.0.js></script>\n' +
     '<script src=/bundle.js></script>\n' +
-    '<script src="/api.js"></script>\n' + 
     '<script>\n' +
       'var Thread = require("./threading.js"), \n' + 
       'container = document.getElementById("content"); \n' +
@@ -50,12 +49,7 @@ function safeStringify(obj) {
   return JSON.stringify(obj).replace(/<\/script/g, '<\\/script').replace(/<!--/g, '<\\!--')
 }
 
-clientApi = function(req, res){
-	res.setHeader('Content-Type', 'text/javascript');
-	res.end(fs.readFileSync('./clientApi.js'));
-}
 
 exports.thread = thread;
 exports.bundle = bundle;
 exports.style = style;
-exports.api = clientApi;
